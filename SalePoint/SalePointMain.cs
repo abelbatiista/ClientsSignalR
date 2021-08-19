@@ -39,6 +39,8 @@ namespace SalePoint
             _orderService = new CRestaurantOrderService();
 
             _id = 0;
+
+            this.Load += new EventHandler(this.SalePointMain_Load);
         }
 
         #region Events
@@ -46,6 +48,7 @@ namespace SalePoint
         private async void SalePointMain_Load(object sender, EventArgs e)
         {
             await ThrowChoice();
+            this.Refresh();
         }
 
         private void DgvOrders_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -193,6 +196,7 @@ namespace SalePoint
             }
 
             await connection.InvokeCoreAsync("SendSome", args: new[] { _orders });
+            await connection.StopAsync();
         }
 
         private async Task Receive()
@@ -204,8 +208,6 @@ namespace SalePoint
 
             connection.On<List<string>>("ReceiveSome", (items) =>
             {
-                orders = null;
-
                 foreach (var item in items)
                 {
                     orders.Add(JsonConvert.DeserializeObject<COrdersViewModel>(item));
@@ -223,7 +225,8 @@ namespace SalePoint
                 });
 
             });
-            
+            await connection.StopAsync();
+
         }
 
         private async Task ThrowChoice()

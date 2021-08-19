@@ -51,9 +51,9 @@ namespace OrderMonitor
             await ThrowChoice();
         }
 
-        private void BtnInsertOrder_Click(object sender, EventArgs e)
+        private async void BtnInsertOrder_Click(object sender, EventArgs e)
         {
-            ShowInsertOrderForm();
+            await ShowInsertOrderForm();
         }
 
         private void DgvOrders_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -86,7 +86,7 @@ namespace OrderMonitor
             DgvOrders.ClearSelection();
         }
 
-        private async void ShowInsertOrderForm()
+        private async Task ShowInsertOrderForm()
         {
             FmInsertOrder insertOrder = new FmInsertOrder();
             this.Hide();
@@ -158,6 +158,7 @@ namespace OrderMonitor
             }
 
             await connection.InvokeCoreAsync("SendSome", args: new[] { _orders });
+            await connection.StopAsync();
         }
 
         private async Task Receive()
@@ -169,8 +170,6 @@ namespace OrderMonitor
 
             connection.On<List<string>>("ReceiveSome", (items) =>
             {
-                orders = null;
-
                 foreach (var item in items)
                 {
                     orders.Add(JsonConvert.DeserializeObject<COrdersViewModel>(item));
@@ -188,6 +187,7 @@ namespace OrderMonitor
                 });
 
             });
+            await connection.StopAsync();
         }
 
         private async Task ThrowChoice()
